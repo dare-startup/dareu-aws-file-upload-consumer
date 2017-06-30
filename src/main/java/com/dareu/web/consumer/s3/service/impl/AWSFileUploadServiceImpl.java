@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,10 +25,17 @@ import java.io.File;
 @Component
 public class AWSFileUploadServiceImpl implements AWSFileUploadService {
 
-    private static final String PROFILE_BUCKET = "dareu-profiles";
-    private static final String THUMB_BUCKET = "dareu-thumbs";
-    private static final String VIDEO_BUCKET = "dareu-uploads";
-    private static final String BASE_URL = "https://%s.s3.amazonaws.com/%s";
+    @Value("${com.dareu.web.s3.profile.bucket.name}")
+    private String profileBucket;
+
+    @Value("${com.dareu.web.s3.thumbs.bucket.name}")
+    private String thumbsBucket;
+
+    @Value("${com.dareu.web.s3.uploads.bucket.name}")
+    private String videoBucket;
+
+    @Value("${com.dareu.web.s3.url.format}")
+    private String s3UrlFormat;
 
     private final Logger log = Logger.getLogger(getClass());
 
@@ -57,15 +65,15 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
             try{
                 switch(properties.getFileType()){
                     case PROFILE:
-                        currentBucket = PROFILE_BUCKET;
+                        currentBucket = profileBucket;
                         fcmToken = fileUpdateRepository.getFcmToken(entityId, FileUpdateRepository.EntityType.USER);
                         break;
                     case RESPONSE:
-                        currentBucket = VIDEO_BUCKET;
+                        currentBucket = videoBucket;
                         fcmToken = fileUpdateRepository.getFcmToken(entityId, FileUpdateRepository.EntityType.RESPONSE);
                         break;
                     case RESPONSE_THUMB:
-                        currentBucket = THUMB_BUCKET;
+                        currentBucket = thumbsBucket;
                         fcmToken = fileUpdateRepository.getFcmToken(entityId, FileUpdateRepository.EntityType.RESPONSE);
                         break;
                     default:
@@ -78,7 +86,7 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
                 amazonS3.putObject(putObjectRequest);
 
                 //generate url
-                final String url = String.format(BASE_URL, currentBucket, file.getName());
+                final String url = String.format(s3UrlFormat, currentBucket, file.getName());
 
 
                 // send message to push notifications service to notify user

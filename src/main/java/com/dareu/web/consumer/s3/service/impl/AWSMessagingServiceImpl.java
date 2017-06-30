@@ -25,10 +25,10 @@ public class AWSMessagingServiceImpl implements AWSMessagingService {
     @Qualifier("amazonSQS")
     private AmazonSQS amazonSQS;
 
-    @Value("#{systemProperties['com.dareu.web.jms.push.queue']}")
+    @Value("${com.dareu.web.jms.push.queue}")
     private String pushNotificationsDestinationName;
 
-    @Value("#{systemProperties['errors.queue.name']}")
+    @Value("$errors.queue.name}")
     private String errorsDestinationName;
 
 

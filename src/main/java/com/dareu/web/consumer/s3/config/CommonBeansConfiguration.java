@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,12 +25,6 @@ public class CommonBeansConfiguration {
     @Qualifier("awsCredentialsProvider")
     private AWSCredentialsProvider awsCredentialsProvider;
 
-    @Bean
-    public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer(){
-        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-        configurer.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
-        return configurer;
-    }
 
     @Bean(name = "gson")
     public Gson gson(){
@@ -44,5 +39,10 @@ public class CommonBeansConfiguration {
     @Bean(name = "dateFormat")
     public DateFormat dateFormat(){
         return new SimpleDateFormat("MM-dd-YYYY HH:ss");
+    }
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer pspc() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }
