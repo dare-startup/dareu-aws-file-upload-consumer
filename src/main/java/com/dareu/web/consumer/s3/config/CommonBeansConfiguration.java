@@ -12,6 +12,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 @Configuration
 @ComponentScan("com.dareu.web.consumer.push")
 @Import(JmsConfiguration.class)
@@ -36,5 +39,10 @@ public class CommonBeansConfiguration {
     @Bean(name = "amazonS3")
     public AmazonS3 amazonS3(){
         return new AmazonS3Client(awsCredentialsProvider);
+    }
+
+    @Bean(name = "dateFormat")
+    public DateFormat dateFormat(){
+        return new SimpleDateFormat("MM-dd-YYYY HH:ss");
     }
 }

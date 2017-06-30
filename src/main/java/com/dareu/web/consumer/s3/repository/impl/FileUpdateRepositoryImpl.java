@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 @Component
@@ -42,5 +43,28 @@ public class FileUpdateRepositoryImpl implements FileUpdateRepository {
         }catch(Exception ex){
             throw new QueryExecutionException(ex.getMessage());
         }
+    }
+
+    @Override
+    public String getFcmToken(String entityId, FileUpdateRepository.EntityType entityType) throws QueryExecutionException, Exception {
+        try{
+            switch (entityType){
+                case RESPONSE:
+                    return (String)entityManager.createNativeQuery("SELECT u.gcm_reg_id from dareu_user u inner join dare_response d on d.user_id = u.id where u.id = ?1")
+                            .setParameter(1, entityId)
+                            .getSingleResult();
+                case USER:
+                    return (String)entityManager.createNativeQuery("SELECT u.gcm_reg_id from dareu_user WHERE u.id = ?1")
+                            .setParameter(1, entityId)
+                            .getSingleResult();
+                default:
+                    throw new IllegalArgumentException("Entity type not supported");
+            }
+        }catch(NoResultException ex){
+            return null;
+        } catch(Exception ex){
+            throw new QueryExecutionException(ex.getMessage(), ex);
+        }
+
     }
 }
