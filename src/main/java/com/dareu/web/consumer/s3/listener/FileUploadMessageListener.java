@@ -47,7 +47,6 @@ public class FileUploadMessageListener {
                 //upload file
                 awsFileUploadService.uploadFile(payloadMessage);
             } catch(JMSException ex){
-                //TODO: send a message to errors queue
                 try{
                     awsMessagingService.sendErrorMessage(new ErrorMessageRequest(ex.getMessage(),
                             dateFormat.format(new Date()), getClass().getPackage().getName()));
@@ -56,7 +55,6 @@ public class FileUploadMessageListener {
                 }
                 logger.error(ex.getMessage());
             } catch(AWSFileUploadException ex){
-                //TODO: send a message to errors queue
                 logger.error(ex.getMessage());
             } catch(Exception ex){
                 logger.error(ex.getMessage());
