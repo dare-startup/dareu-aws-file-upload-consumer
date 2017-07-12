@@ -1,12 +1,11 @@
 package com.dareu.web.consumer.s3.service.impl;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.dareu.web.consumer.s3.exception.AWSMessageException;
 import com.dareu.web.consumer.s3.service.AWSMessagingService;
 import com.dareu.web.dto.jms.ErrorMessageRequest;
-import com.dareu.web.dto.jms.QueueMessage;
+import com.dareu.web.dto.jms.PushNotificationRequest;
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class AWSMessagingServiceImpl implements AWSMessagingService {
     private final Logger log = Logger.getLogger(getClass());
 
     @Override
-    public void sendPushNotificationMessage(QueueMessage queueMessage) throws AWSMessageException {
+    public void sendPushNotificationMessage(PushNotificationRequest queueMessage) throws AWSMessageException {
         final String queueUrl = amazonSQS.getQueueUrl(pushNotificationsDestinationName).getQueueUrl();
         amazonSQS.sendMessage(new SendMessageRequest(queueUrl, gson.toJson(queueMessage)));
     }

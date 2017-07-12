@@ -2,7 +2,7 @@ package com.dareu.web.consumer.s3.repository.impl;
 
 import com.dareu.web.consumer.s3.exception.QueryExecutionException;
 import com.dareu.web.consumer.s3.repository.FileUpdateRepository;
-import com.dareu.web.dto.jms.FileUploadProperties;
+import com.dareu.web.dto.jms.FileUploadRequest;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class FileUpdateRepositoryImpl implements FileUpdateRepository {
 
     private final Logger logger = Logger.getLogger(getClass());
 
-    public void updateEntityFileUploadUrl(String id, String awsUrl, FileUploadProperties.DareuFileType dareuFileType) throws QueryExecutionException {
+    public void updateEntityFileUploadUrl(String id, String awsUrl, FileUploadRequest.DareuFileType dareuFileType) throws QueryExecutionException {
         String queryValue;
         switch(dareuFileType){
             case PROFILE:
@@ -63,7 +63,7 @@ public class FileUpdateRepositoryImpl implements FileUpdateRepository {
         }catch(NoResultException ex){
             return null;
         } catch(Exception ex){
-            throw new QueryExecutionException(ex.getMessage(), ex);
+            return null;
         }
 
     }

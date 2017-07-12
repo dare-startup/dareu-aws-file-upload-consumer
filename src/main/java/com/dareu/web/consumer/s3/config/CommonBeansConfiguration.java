@@ -1,11 +1,14 @@
 package com.dareu.web.consumer.s3.config;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,10 +24,11 @@ import java.text.SimpleDateFormat;
 @Import(JmsConfiguration.class)
 public class CommonBeansConfiguration {
 
-    @Autowired
-    @Qualifier("awsCredentialsProvider")
-    private AWSCredentialsProvider awsCredentialsProvider;
+    @Value("${s3.aws.access.key}")
+    private String accessKey;
 
+    @Value("${s3.aws.secret.key}")
+    private String secretKey;
 
     @Bean(name = "gson")
     public Gson gson(){
@@ -33,7 +37,7 @@ public class CommonBeansConfiguration {
 
     @Bean(name = "amazonS3")
     public AmazonS3 amazonS3(){
-        return new AmazonS3Client(awsCredentialsProvider);
+        return new AmazonS3Client(s3CredentialsProvider());
     }
 
     @Bean(name = "dateFormat")
@@ -44,5 +48,18 @@ public class CommonBeansConfiguration {
     @Bean
     public static PropertySourcesPlaceholderConfigurer pspc() {
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean(name = "s3AwsCredentialsprovider")
+    public AWSCredentialsProvider s3CredentialsProvider(){
+        return new AWSCredentialsProvider() {
+            public AWSCredentials getCredentials() {
+                return new BasicAWSCredentials(accessKey, secretKey);
+            }
+
+            public void refresh() {
+
+            }
+        };
     }
 }

@@ -10,9 +10,9 @@ import com.dareu.web.consumer.s3.exception.QueryExecutionException;
 import com.dareu.web.consumer.s3.repository.FileUpdateRepository;
 import com.dareu.web.consumer.s3.service.AWSFileUploadService;
 import com.dareu.web.consumer.s3.service.AWSMessagingService;
-import com.dareu.web.dto.jms.FileUploadProperties;
-import com.dareu.web.dto.jms.PayloadMessage;
-import com.dareu.web.dto.jms.QueueMessage;
+import com.dareu.web.dto.jms.FileUploadRequest;
+import com.dareu.web.dto.jms.PushNotificationPayload;
+import com.dareu.web.dto.jms.PushNotificationRequest;
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +37,10 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
     @Value("${com.dareu.web.s3.url.format}")
     private String s3UrlFormat;
 
+    @Value("${dareu.multipart.tmp.directory}")
+    private String tmpDirectory;
+
+
     private final Logger log = Logger.getLogger(getClass());
 
     @Autowired
@@ -53,17 +57,22 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
     @Autowired
     private FileUpdateRepository fileUpdateRepository;
 
-    public void uploadFile(PayloadMessage payloadMessage) throws AWSFileUploadException, Exception {
+    public void uploadFile(FileUploadRequest properties) throws AWSFileUploadException {
         //get message
-        FileUploadProperties properties = (FileUploadProperties)payloadMessage.getData();
-        File  file = new File(properties.getCurrentFilePath());
-        final String entityId = file.getName().split(".")[0];
+        File  file = new File(tmpDirectory + properties.getFileName());
         if(file.exists()){
+            String[] array = properties.getFileName().split("\\.");
+            if(array.length == 0)
+                throw new AWSFileUploadException(String.format("Looks like we have a little bug here, we cannot split the file name using '.'"));
+            final String entityId = array[0];
+            final FileUploadRequest.DareuFileType fileType = FileUploadRequest.DareuFileType.fromString(properties.getFileType());
+            if(fileType == null)
+                throw new AWSFileUploadException(String.format("FileType %s is not valid"));
             log.info(String.format("Uploading file to S3 service: Starting upload of %s", file.getAbsolutePath()));
             String currentBucket;
             String fcmToken;
             try{
-                switch(properties.getFileType()){
+                switch(fileType){
                     case PROFILE:
                         currentBucket = profileBucket;
                         fcmToken = fileUpdateRepository.getFcmToken(entityId, FileUpdateRepository.EntityType.USER);
@@ -90,27 +99,30 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
 
 
                 // send message to push notifications service to notify user
-                QueueMessage pushNotificationMessage =
-                        new QueueMessage(fcmToken, new PayloadMessage("dareu.upload.complete", url));
-                        awsMessagingService.sendPushNotificationMessage(pushNotificationMessage);
+                if(fcmToken != null && ! fcmToken.isEmpty()){
+                    PushNotificationRequest pushNotificationMessage =
+                            new PushNotificationRequest(fcmToken, new PushNotificationPayload("dareu.upload.complete", url));
+                    awsMessagingService.sendPushNotificationMessage(pushNotificationMessage);
+                }
+
 
                 //delete tmp file
                 file.delete();
-            }catch(AmazonServiceException ex){
+            } catch(ArrayIndexOutOfBoundsException ex){
+                log.error(String.format("ArrayIndexOutOfBoundsException: %s", ex.getMessage()));
+                throw new AWSFileUploadException("Could not upload file to S3 service, check Amazon Service and server log details");
+            } catch(AmazonServiceException ex){
                 log.error(String.format("AmazonServiceException: %s", ex.getMessage()));
                 throw new AWSFileUploadException("Could not upload file to S3 service, check Amazon Service and server log details");
             } catch(SdkClientException ex){
                 log.error(String.format("SdkClientException: %s", ex.getMessage()));
                 throw new AWSFileUploadException("Could not upload file to S3 service, check Amazon SDK configuration and server log details");
-            } catch(QueryExecutionException ex){
-                log.error(String.format("QueryExecutionException: %s", ex.getMessage()));
-                throw new QueryExecutionException("Could not upload file to S3 service, check FileUpdateRepository query and server log details");
             } catch(Exception ex){
                 log.error(ex.getMessage());
                 throw new AWSFileUploadException("An unknown error occurred, check server log for details");
             }
         }else{
-            log.info(String.format("Cannot upload file to S3 service: File %s does not exists", file.getAbsolutePath()));
+            log.error(String.format("Cannot upload file to S3 service: File %s does not exists on %s", file.getAbsolutePath(), tmpDirectory));
         }
     }
 }

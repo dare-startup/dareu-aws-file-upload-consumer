@@ -29,7 +29,7 @@ public class JmsConfiguration {
     @Value("${sqs.aws.secret.key}")
     private String awsSecretKey;
 
-    @Value("${com.dareu.web.jms.push.queue}")
+    @Value("${com.dareu.web.jms.file.queue}")
     private String destinationName;
 
     @Autowired
