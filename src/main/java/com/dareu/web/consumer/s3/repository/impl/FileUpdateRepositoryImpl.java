@@ -2,7 +2,7 @@ package com.dareu.web.consumer.s3.repository.impl;
 
 import com.dareu.web.consumer.s3.exception.QueryExecutionException;
 import com.dareu.web.consumer.s3.repository.FileUpdateRepository;
-import com.messaging.dto.upload.FileUploadRequest;
+import com.messaging.dto.upload.DareuFileType;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class FileUpdateRepositoryImpl implements FileUpdateRepository {
 
     private final Logger logger = Logger.getLogger(getClass());
 
-    public void updateEntityFileUploadUrl(String id, String awsUrl, FileUploadRequest.DareuFileType dareuFileType) throws QueryExecutionException {
+    public void updateEntityFileUploadUrl(String id, String awsUrl, DareuFileType dareuFileType) throws QueryExecutionException {
         String queryValue;
         switch(dareuFileType){
             case PROFILE:

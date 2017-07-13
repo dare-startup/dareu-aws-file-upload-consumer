@@ -10,6 +10,7 @@ import com.dareu.web.consumer.s3.repository.FileUpdateRepository;
 import com.dareu.web.consumer.s3.service.AWSFileUploadService;
 import com.dareu.web.consumer.s3.service.AWSMessagingService;
 import com.google.gson.Gson;
+import com.messaging.dto.upload.DareuFileType;
 import com.messaging.dto.upload.FileUploadRequest;
 import com.messaging.dto.push.PushNotificationPayload;
 import com.messaging.dto.push.PushNotificationRequest;
@@ -63,7 +64,7 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
             if(array.length == 0)
                 throw new AWSFileUploadException(String.format("Looks like we have a little bug here, we cannot split the file name using '.'"));
             final String entityId = array[0];
-            final FileUploadRequest.DareuFileType fileType = FileUploadRequest.DareuFileType.fromString(properties.getFileType());
+            final DareuFileType fileType = DareuFileType.fromString(properties.getFileType());
             if(fileType == null)
                 throw new AWSFileUploadException(String.format("FileType %s is not valid"));
             log.info(String.format("Uploading file to S3 service: Starting upload of %s", file.getAbsolutePath()));
