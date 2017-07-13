@@ -2,7 +2,7 @@ package com.dareu.web.consumer.s3.repository.impl;
 
 import com.dareu.web.consumer.s3.exception.QueryExecutionException;
 import com.dareu.web.consumer.s3.repository.FileUpdateRepository;
-import com.dareu.web.dto.jms.FileUploadRequest;
+import com.messaging.dto.FileUploadRequest;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 

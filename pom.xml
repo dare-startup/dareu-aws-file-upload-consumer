@@ -75,6 +75,11 @@
       <artifactId>dareu-dto</artifactId>
       <version>1.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.messaging.dto</groupId>
+      <artifactId>server-messaging-dto</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>dareu-aws-file-upload-consumer</finalName>
