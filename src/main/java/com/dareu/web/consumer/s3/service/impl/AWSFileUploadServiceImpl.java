@@ -39,9 +39,6 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
     @Value("${dareu.multipart.tmp.directory}")
     private String tmpDirectory;
 
-
-    private final Logger log = Logger.getLogger(getClass());
-
     @Autowired
     @Qualifier("amazonS3")
     private AmazonS3 amazonS3;
@@ -55,6 +52,8 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
 
     @Autowired
     private FileUpdateRepository fileUpdateRepository;
+
+    private final Logger log = Logger.getLogger(getClass());
 
     public void uploadFile(FileUploadRequest properties) throws AWSFileUploadException {
         //get message
@@ -70,6 +69,7 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
             log.info(String.format("Uploading file to S3 service: Starting upload of %s", file.getAbsolutePath()));
             String currentBucket;
             String fcmToken;
+            //choose bucket name and get fcm token
             try{
                 switch(fileType){
                     case PROFILE:
@@ -89,13 +89,13 @@ public class AWSFileUploadServiceImpl implements AWSFileUploadService {
                         log.info(errorMessage);
                         throw new AWSFileUploadException(errorMessage);
                 }
+                //upload file
                 final PutObjectRequest putObjectRequest = new PutObjectRequest(currentBucket, file.getName(), file);
                 putObjectRequest.setCannedAcl(CannedAccessControlList.PublicRead);
                 amazonS3.putObject(putObjectRequest);
 
                 //generate url
                 final String url = String.format(s3UrlFormat, currentBucket, file.getName());
-
 
                 // send message to push notifications service to notify user
                 if(fcmToken != null && ! fcmToken.isEmpty()){
